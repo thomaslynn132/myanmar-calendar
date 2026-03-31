@@ -4,13 +4,15 @@ import { MonthCalendar } from "./MonthCalendar";
 import { CalendarLegend } from "./CalendarLegend";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Moon, Sun } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { FreeMode } from "swiper/modules";
+import { useTheme } from "@/components/ThemeProvider";
 import "swiper/css";
 import "swiper/css/free-mode";
 
 export function Calendar() {
+  const { theme, toggleTheme } = useTheme();
   const {
     loading,
     currentPage,
@@ -125,6 +127,9 @@ export function Calendar() {
             <Button variant="outline" size="sm" onClick={handleNext} disabled={activeSlide === totalPages - 1}>
               Next
               <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={toggleTheme}>
+              {theme === "light" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
             </Button>
           </div>
         </div>
