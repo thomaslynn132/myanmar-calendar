@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import type { Holiday, MyanmarMonth } from "@/lib/types";
-import { TooltipWrapper } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/date-utils";
 import { isWeekendDay } from "@/lib/constants";
@@ -50,11 +50,11 @@ export function DayCell({
   );
 
   const FullMoonIcon = () => (
-    <div className="w-2.5 h-2.5 rounded-full bg-yellow-400 shadow-sm" />
+    <div className="w-2 h-2 rounded-full bg-yellow-400" />
   );
 
-  const EclipseIcon = () => (
-    <div className="w-2.5 h-2.5 rounded-full border-2 border-purple-500 bg-white/70 shadow-sm" />
+  const NoMoonIcon = () => (
+    <div className="w-2 h-2 rounded-full border border-purple-500 bg-white/70" />
   );
 
   if (!isCurrentMonth) {
@@ -72,7 +72,7 @@ export function DayCell({
       <div className="flex items-start justify-center gap-0.5">
         <span className={dayNumberClasses}>{format(day, "d")}</span>
         {hasFullMoon && <FullMoonIcon />}
-        {hasNoMoon && <EclipseIcon />}
+        {hasNoMoon && <NoMoonIcon />}
       </div>
       {showMyanmarLabel && myanmarMonth && (
         <span className={myanmarLabelClasses}>{myanmarMonth.myanmar_name}</span>
@@ -82,13 +82,18 @@ export function DayCell({
 
   if (holidays.length > 0) {
     return (
-      <TooltipWrapper
-        content={
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className={cellClasses}>
+            {renderDayContent()}
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>
           <div className="space-y-1">
             {holidays.map((h) => (
               <div key={h.id} className="flex items-center gap-2">
                 {h.type === "full_mon_day" && <FullMoonIcon />}
-                {h.type === "no_moon_day" && <EclipseIcon />}
+                {h.type === "no_moon_day" && <NoMoonIcon />}
                 <p className="font-medium">{h.label}</p>
               </div>
             ))}
@@ -96,12 +101,8 @@ export function DayCell({
               <p className="text-xs text-muted-foreground pt-1 border-t">{myanmarMonth.myanmar_name}</p>
             )}
           </div>
-        }
-      >
-        <div className={cellClasses}>
-          {renderDayContent()}
-        </div>
-      </TooltipWrapper>
+        </TooltipContent>
+      </Tooltip>
     );
   }
 

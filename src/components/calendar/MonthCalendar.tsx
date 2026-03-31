@@ -4,17 +4,15 @@ import { DayCell } from "./DayCell";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/date-utils";
 import { WEEKDAYS, isWeekendDay } from "@/lib/constants";
-import { motion } from "framer-motion";
 
 interface MonthCalendarProps {
   year: number;
   monthIndex: number;
   holidays: Holiday[];
   myanmarMonths: MyanmarMonth[];
-  index?: number;
 }
 
-export function MonthCalendar({ year, monthIndex, holidays, myanmarMonths, index = 0 }: MonthCalendarProps) {
+export function MonthCalendar({ year, monthIndex, holidays, myanmarMonths }: MonthCalendarProps) {
   const monthStart = startOfMonth(new Date(year, monthIndex));
   const monthEnd = new Date(year, monthIndex + 1, 0);
   const monthName = format(monthStart, "MMMM");
@@ -77,13 +75,7 @@ export function MonthCalendar({ year, monthIndex, holidays, myanmarMonths, index
   const myanmarLabels = getMyanmarMonthLabelForHeader();
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -20, scale: 0.95 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
-      className="bg-card border rounded-lg p-4"
-    >
+    <div className="bg-card border rounded-lg p-4">
       <div className="text-center mb-3">
         <h3 className="text-base font-semibold text-foreground">
           {monthName} {year}
@@ -137,6 +129,6 @@ export function MonthCalendar({ year, monthIndex, holidays, myanmarMonths, index
           );
         })}
       </div>
-    </motion.div>
+    </div>
   );
 }
