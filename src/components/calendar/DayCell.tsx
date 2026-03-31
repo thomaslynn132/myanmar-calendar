@@ -1,6 +1,6 @@
 import { format } from "date-fns";
-import type { Holiday, MyanmarMonth, HolidayType } from "@/lib/types";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import type { Holiday, MyanmarMonth } from "@/lib/types";
+import { TooltipWrapper } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/date-utils";
 import { isWeekendDay } from "@/lib/constants";
@@ -8,20 +8,16 @@ import { isWeekendDay } from "@/lib/constants";
 interface DayCellProps {
   day: Date;
   isCurrentMonth: boolean;
-  holiday?: Holiday;
+  holidays?: Holiday[];
   myanmarMonth?: MyanmarMonth;
   isFirstDayOfMyanmarMonth: boolean;
   isFirstDayOfEnglishMonth: boolean;
 }
 
-const isHolidayType = (type: HolidayType | undefined, check: HolidayType): boolean => {
-  return type === check;
-};
-
 export function DayCell({
   day,
   isCurrentMonth,
-  holiday,
+  holidays = [],
   myanmarMonth,
   isFirstDayOfMyanmarMonth,
   isFirstDayOfEnglishMonth,
@@ -31,7 +27,9 @@ export function DayCell({
   const isToday = formatDate(day) === formatDate(new Date());
   const showMyanmarLabel = isFirstDayOfEnglishMonth || isFirstDayOfMyanmarMonth;
 
-  const { type: holidayType } = holiday ?? {};
+  const hasPublicHoliday = holidays.some(h => h.type === "public_holiday");
+  const hasFullMoon = holidays.some(h => h.type === "full_mon_day");
+  const hasNoMoon = holidays.some(h => h.type === "no_moon_day");
 
   const cellClasses = cn(
     "aspect-square flex flex-col items-center justify-center rounded transition-colors relative",
@@ -39,16 +37,16 @@ export function DayCell({
     !isWeekend && !isCurrentMonth && "text-muted-foreground/30",
     isCurrentMonth && (isWeekend ? "bg-pink-50 dark:bg-pink-950/20" : "hover:bg-accent/50"),
     isToday && isCurrentMonth && "ring-2 ring-blue-500 ring-inset",
-    holiday && "cursor-pointer"
+    holidays.length > 0 && "cursor-pointer"
   );
 
   const dayNumberClasses = cn(
     "text-xs",
-    isHolidayType(holidayType, "public_holiday") && "text-red-600 font-semibold",
-    isHolidayType(holidayType, "full_mon_day") && "text-yellow-600 font-semibold",
-    isHolidayType(holidayType, "no_moon_day") && "text-purple-600 font-semibold",
-    !holiday && isWeekend && "text-pink-600",
-    !holiday && !isWeekend && "text-foreground"
+    hasPublicHoliday && "text-red-600 font-semibold",
+    hasFullMoon && "text-yellow-600 font-semibold",
+    hasNoMoon && "text-purple-600 font-semibold",
+    holidays.length === 0 && isWeekend && "text-pink-600",
+    holidays.length === 0 && !isWeekend && "text-foreground"
   );
 
   const FullMoonIcon = () => (
@@ -73,8 +71,8 @@ export function DayCell({
     <>
       <div className="flex items-start justify-center gap-0.5">
         <span className={dayNumberClasses}>{format(day, "d")}</span>
-        {isHolidayType(holidayType, "full_mon_day") && <FullMoonIcon />}
-        {isHolidayType(holidayType, "no_moon_day") && <EclipseIcon />}
+        {hasFullMoon && <FullMoonIcon />}
+        {hasNoMoon && <EclipseIcon />}
       </div>
       {showMyanmarLabel && myanmarMonth && (
         <span className={myanmarLabelClasses}>{myanmarMonth.myanmar_name}</span>
@@ -82,24 +80,28 @@ export function DayCell({
     </>
   );
 
-  if (holiday) {
+  if (holidays.length > 0) {
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className={cellClasses}>
-            {renderDayContent()}
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <div className="space-y-0.5">
-            <p className="font-medium">{holiday.label}</p>
-            <p className="text-xs text-muted-foreground">{holiday.type.replace(/_/g, " ")}</p>
+      <TooltipWrapper
+        content={
+          <div className="space-y-1">
+            {holidays.map((h) => (
+              <div key={h.id} className="flex items-center gap-2">
+                {h.type === "full_mon_day" && <FullMoonIcon />}
+                {h.type === "no_moon_day" && <EclipseIcon />}
+                <p className="font-medium">{h.label}</p>
+              </div>
+            ))}
             {myanmarMonth && (
-              <p className="text-xs text-muted-foreground">{myanmarMonth.myanmar_name}</p>
+              <p className="text-xs text-muted-foreground pt-1 border-t">{myanmarMonth.myanmar_name}</p>
             )}
           </div>
-        </TooltipContent>
-      </Tooltip>
+        }
+      >
+        <div className={cellClasses}>
+          {renderDayContent()}
+        </div>
+      </TooltipWrapper>
     );
   }
 
